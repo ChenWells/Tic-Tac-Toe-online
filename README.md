@@ -21,8 +21,8 @@
 
 1. 克隆專案
 ```bash
-git clone https://github.com/你的用戶名/tic-tac-toe-online.git
-cd tic-tac-toe-online
+git clone https://github.com/ChenWells/Tic-Tac-Toe-Online.git
+cd Tic-Tac-Toe-Online
 ```
 
 2. 安裝依賴
@@ -58,8 +58,8 @@ http://localhost:3000
 
 ## 開發者
 
-- 作者：[Chen FuKuo]
-- GitHub：[fgchen@gmail.com]
+- 作者：Chen FuKuo
+- GitHub：[ChenWells](https://github.com/ChenWells)
 
 ## 授權
 

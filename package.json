@@ -1,7 +1,7 @@
 {
-  "name": "tic-tac-toe-online",
+  "name": "Tic-Tac-Toe-Online",
   "version": "1.0.0",
-  "description": "一個使用 Node.js 和 Socket.IO 開發的線上多人井字遊戲",
+  "description": "線上多人版本井字遊戲",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -14,7 +14,7 @@
     "socket.io",
     "nodejs"
   ],
-  "author": "[你的名字]",
+  "author": "Chen FuKuo",
   "license": "MIT",
   "dependencies": {
     "express": "^4.18.2",
