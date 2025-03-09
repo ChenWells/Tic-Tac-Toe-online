@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>井字遊戲架構圖</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="architectureCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('architectureCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // 設置畫布大小
+        canvas.width = 1200;
+        canvas.height = 800;
+
+        // 顏色配置
+        const colors = {
+            backend: '#4A90E2',
+            frontend: '#50E3C2',
+            connection: '#F5A623',
+            text: '#2C3E50',
+            box: '#ECF0F1',
+            arrow: '#95A5A6'
+        };
+
+        // 繪製圓角矩形
+        function roundRect(x, y, width, height, radius, color) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+            ctx.fillStyle = color;
+            ctx.fill();
+        }
+
+        // 繪製箭頭
+        function drawArrow(fromX, fromY, toX, toY, color, bidirectional = false) {
+            const headLength = 15;
+            const angle = Math.atan2(toY - fromY, toX - fromX);
+
+            // 繪製線條
+            ctx.beginPath();
+            ctx.moveTo(fromX, fromY);
+            ctx.lineTo(toX, toY);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // 繪製終點箭頭
+            ctx.beginPath();
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(toX - headLength * Math.cos(angle - Math.PI / 6),
+                      toY - headLength * Math.sin(angle - Math.PI / 6));
+            ctx.lineTo(toX - headLength * Math.cos(angle + Math.PI / 6),
+                      toY - headLength * Math.sin(angle + Math.PI / 6));
+            ctx.closePath();
+            ctx.fillStyle = color;
+            ctx.fill();
+
+            // 如果是雙向箭頭，繪製起點箭頭
+            if (bidirectional) {
+                ctx.beginPath();
+                ctx.moveTo(fromX, fromY);
+                ctx.lineTo(fromX + headLength * Math.cos(angle - Math.PI / 6),
+                          fromY + headLength * Math.sin(angle - Math.PI / 6));
+                ctx.lineTo(fromX + headLength * Math.cos(angle + Math.PI / 6),
+                          fromY + headLength * Math.sin(angle + Math.PI / 6));
+                ctx.closePath();
+                ctx.fillStyle = color;
+                ctx.fill();
+            }
+        }
+
+        // 繪製文字
+        function drawText(text, x, y, fontSize = 16, color = colors.text) {
+            ctx.font = `${fontSize}px Arial`;
+            ctx.fillStyle = color;
+            ctx.textAlign = 'center';
+            ctx.fillText(text, x, y);
+        }
+
+        // 繪製模塊
+        function drawModule(title, items, x, y, width, height, color) {
+            roundRect(x, y, width, height, 10, color);
+            drawText(title, x + width/2, y + 30, 18);
+            
+            items.forEach((item, index) => {
+                roundRect(x + 20, y + 50 + index * 40, width - 40, 30, 5, colors.box);
+                drawText(item, x + width/2, y + 70 + index * 40, 14);
+            });
+        }
+
+        // 開始繪製
+        // 後端模塊
+        drawModule('後端 (server.js)', [
+            '房間管理系統',
+            '遊戲邏輯處理',
+            'Socket.IO 事件處理',
+            '用戶狀態管理'
+        ], 100, 100, 250, 220, colors.backend);
+
+        // 前端模塊
+        drawModule('前端 (index.html)', [
+            '用戶界面',
+            '遊戲操作邏輯',
+            '即時通訊處理',
+            '狀態更新'
+        ], 850, 100, 250, 220, colors.frontend);
+
+        // Socket.IO 連接
+        roundRect(450, 150, 300, 100, 10, colors.connection);
+        drawText('Socket.IO 連接', 600, 180, 18);
+        drawText('即時雙向通訊', 600, 210, 14);
+
+        // 繪製連接箭頭
+        drawArrow(350, 200, 450, 200, colors.arrow, true);
+        drawArrow(750, 200, 850, 200, colors.arrow, true);
+
+        // 數據流模塊
+        drawModule('數據流', [
+            '遊戲狀態同步',
+            '用戶操作傳遞',
+            '聊天消息',
+            '房間狀態更新'
+        ], 475, 350, 250, 220, '#9B59B6');
+
+        // 功能模塊
+        const features = [
+            ['登入系統', '房間管理', '遊戲邏輯'],
+            ['聊天系統', '用戶管理', '狀態同步']
+        ];
+
+        features.forEach((row, rowIndex) => {
+            row.forEach((feature, colIndex) => {
+                const x = 100 + colIndex * 400;
+                const y = 600;
+                roundRect(x, y, 200, 60, 10, '#E74C3C');
+                drawText(feature, x + 100, y + 35, 16, 'white');
+            });
+        });
+
+        // 添加說明文字
+        ctx.textAlign = 'center';
+        drawText('井字遊戲系統架構圖', canvas.width/2, 50, 24, '#2C3E50');
+        
+    </script>
+</body>
+</html> 
