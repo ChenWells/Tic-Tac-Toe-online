@@ -21,8 +21,8 @@
 
 1. 克隆專案
 ```bash
-git clone https://github.com/ChenWells/Tic-Tac-Toe-Online.git
-cd Tic-Tac-Toe-Online
+git clone https://github.com/ChenWells/Tic-Tac-Toe-online.git
+cd Tic-Tac-Toe-online
 ```
 
 2. 安裝依賴
