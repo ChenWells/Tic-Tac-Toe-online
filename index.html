@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>井字遊戲 - 線上多人版本</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- 導航欄 -->
+    <nav class="bg-gray-800 hidden" id="navbar">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-8">
+                    <a href="#" class="text-xl font-bold">井字遊戲</a>
+                    <a href="#" onclick="showPage('lobbyPage')" class="hover:text-blue-400">遊戲大廳</a>
+                    <a href="#" onclick="showPage('leaderboardPage')" class="hover:text-blue-400">排行榜</a>
+                    <a href="#" onclick="showPage('profilePage')" class="hover:text-blue-400">個人資料</a>
+                </div>
+                <button onclick="logout()" class="text-red-400 hover:text-red-500">
+                    <i class="fas fa-sign-out-alt mr-2"></i>登出
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 登入頁面 -->
+    <div class="min-h-screen flex items-center justify-center" id="loginPage">
+        <div class="bg-gray-800 p-8 rounded-lg shadow-lg w-96">
+            <h2 class="text-2xl font-bold mb-6 text-center">歡迎來到井字遊戲</h2>
+            <div class="space-y-4">
+                <input type="text" placeholder="用戶名" class="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600" id="username">
+                <input type="password" placeholder="密碼" class="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600" id="password">
+                <button class="w-full bg-blue-600 hover:bg-blue-700 py-2 rounded font-bold">登入</button>
+                <p class="text-center text-gray-400">還沒有帳號？ <a href="#" class="text-blue-400">立即註冊</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 遊戲大廳 -->
+    <div class="container mx-auto px-4 py-8 hidden" id="lobbyPage">
+        <div class="flex justify-between items-center mb-8">
+            <div class="flex items-center space-x-4">
+                <img src="https://via.placeholder.com/40" class="rounded-full">
+                <span class="font-bold player-name">玩家名稱</span>
+            </div>
+            <button onclick="createRoom()" class="bg-green-600 hover:bg-green-700 px-6 py-2 rounded-lg">
+                <i class="fas fa-plus mr-2"></i>創建房間
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="roomList">
+            <!-- 房間列表將由 JavaScript 動態生成 -->
+        </div>
+    </div>
+
+    <!-- 遊戲房間 -->
+    <div class="container mx-auto px-4 py-8 hidden" id="gamePage">
+        <div class="max-w-5xl mx-auto">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <!-- 遊戲區域 -->
+                <div class="lg:col-span-3">
+                    <div class="bg-gray-800 rounded-lg p-6 mb-8">
+                        <div class="grid grid-cols-3 gap-4 mb-8" id="gameBoard">
+                            <!-- 井字格由 JavaScript 動態生成 -->
+                        </div>
+
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center space-x-8">
+                                <div class="text-center" id="player1Info">
+                                    <div class="font-bold mb-2">玩家 1 (X)</div>
+                                    <div class="text-blue-400">等待加入...</div>
+                                    <div class="text-sm mt-2">
+                                        <span class="text-green-400">勝: <span class="wins">0</span></span>
+                                        <span class="text-red-400 ml-2">負: <span class="losses">0</span></span>
+                                    </div>
+                                </div>
+                                <div class="text-center opacity-50" id="player2Info">
+                                    <div class="font-bold mb-2">玩家 2 (O)</div>
+                                    <div>等待加入...</div>
+                                    <div class="text-sm mt-2">
+                                        <span class="text-green-400">勝: <span class="wins">0</span></span>
+                                        <span class="text-red-400 ml-2">負: <span class="losses">0</span></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button onclick="leaveRoom()" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded">
+                                <i class="fas fa-door-open mr-2"></i>離開
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 聊天區域 -->
+                <div class="lg:col-span-1">
+                    <div class="bg-gray-800 rounded-lg p-4 h-full flex flex-col">
+                        <div class="font-bold mb-4">聊天室</div>
+                        <div class="flex-1 overflow-y-auto mb-4 space-y-2" id="chatMessages" style="max-height: 400px;">
+                            <!-- 聊天消息將由 JavaScript 動態生成 -->
+                        </div>
+                        <div class="flex space-x-2">
+                            <input type="text" id="chatInput" placeholder="輸入消息..." 
+                                class="flex-1 px-3 py-2 rounded bg-gray-700 border border-gray-600">
+                            <button onclick="sendMessage()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 個人資料頁面 -->
+    <div class="container mx-auto px-4 py-8 hidden" id="profilePage">
+        <div class="max-w-2xl mx-auto bg-gray-800 rounded-lg p-8">
+            <div class="flex items-center space-x-6 mb-8">
+                <img src="https://via.placeholder.com/100" class="rounded-full">
+                <div>
+                    <h2 class="text-2xl font-bold mb-2">玩家名稱</h2>
+                    <p class="text-gray-400">加入時間：2024-01-01</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-4 mb-8">
+                <div class="bg-gray-700 p-4 rounded-lg text-center">
+                    <div class="text-2xl font-bold mb-2">150</div>
+                    <div class="text-gray-400">總場次</div>
+                </div>
+                <div class="bg-gray-700 p-4 rounded-lg text-center">
+                    <div class="text-2xl font-bold mb-2 text-green-400">85</div>
+                    <div class="text-gray-400">勝場</div>
+                </div>
+                <div class="bg-gray-700 p-4 rounded-lg text-center">
+                    <div class="text-2xl font-bold mb-2">56.7%</div>
+                    <div class="text-gray-400">勝率</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 排行榜頁面 -->
+    <div class="container mx-auto px-4 py-8 hidden" id="leaderboardPage">
+        <div class="max-w-2xl mx-auto">
+            <h2 class="text-2xl font-bold mb-6">排行榜</h2>
+            <div class="bg-gray-800 rounded-lg overflow-hidden">
+                <div class="divide-y divide-gray-700">
+                    <!-- 排行榜項目 -->
+                    <div class="flex items-center p-4 hover:bg-gray-700">
+                        <div class="w-8 text-xl font-bold text-yellow-400">1</div>
+                        <img src="https://via.placeholder.com/40" class="rounded-full mr-4">
+                        <div class="flex-1">
+                            <div class="font-bold">最強玩家</div>
+                            <div class="text-sm text-gray-400">勝率：75.5%</div>
+                        </div>
+                        <div class="text-green-400">150 勝</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Socket.io 連接
+        const socket = io('http://localhost:3000');
+        let currentRoom = null;
+        let currentPlayer = null;
+        let gameBoard = Array(9).fill('');
+        // 添加玩家統計
+        const playerStats = {
+            playerX: { wins: 0, losses: 0 },
+            playerO: { wins: 0, losses: 0 }
+        };
+
+        // 測試用戶數據
+        const testUsers = [
+            { username: 'player1', password: '123' },
+            { username: 'player2', password: '123' },
+            { username: 'player3', password: '123' }
+        ];
+
+        // 頁面管理
+        const pages = ['loginPage', 'lobbyPage', 'gamePage', 'profilePage', 'leaderboardPage'];
+        
+        function showPage(pageId) {
+            pages.forEach(page => {
+                document.getElementById(page).classList.add('hidden');
+            });
+            document.getElementById(pageId).classList.remove('hidden');
+            document.getElementById('navbar').classList.toggle('hidden', pageId === 'loginPage');
+        }
+
+        // 登入功能
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            const user = testUsers.find(u => u.username === username && u.password === password);
+            
+            if (user) {
+                document.querySelectorAll('.player-name').forEach(el => {
+                    el.textContent = username;
+                });
+                
+                // 連接 Socket.io
+                socket.emit('login', { username });
+                showPage('lobbyPage');
+            } else {
+                alert('用戶名或密碼錯誤！\n\n測試帳號：\n' + 
+                      'player1 / 123\n' +
+                      'player2 / 123\n' +
+                      'player3 / 123');
+            }
+        }
+
+        // 房間管理
+        function createRoom() {
+            const roomName = `房間 #${Math.floor(Math.random() * 1000)}`;
+            socket.emit('createRoom', { roomName });
+        }
+
+        function joinRoom(roomId) {
+            socket.emit('joinRoom', { roomId });
+        }
+
+        // 添加新的事件監聽器
+        socket.on('joinSuccess', ({ roomId }) => {
+            currentRoom = roomId;
+            showPage('gamePage');
+            initializeGame();
+        });
+
+        // 遊戲邏輯
+        function initializeGame() {
+            gameBoard = Array(9).fill('');
+            const board = document.getElementById('gameBoard');
+            board.innerHTML = '';
+            
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'aspect-square bg-gray-700 rounded-lg flex items-center justify-center text-4xl cursor-pointer hover:bg-gray-600';
+                cell.dataset.index = i;
+                cell.onclick = () => makeMove(i);
+                board.appendChild(cell);
+            }
+        }
+
+        function makeMove(index) {
+            if (!currentRoom || gameBoard[index] !== '') return;
+            socket.emit('makeMove', { roomId: currentRoom, index });
+        }
+
+        function updateBoard(board) {
+            gameBoard = board;
+            const cells = document.getElementById('gameBoard').children;
+            for (let i = 0; i < 9; i++) {
+                cells[i].textContent = board[i];
+            }
+        }
+
+        // 聊天功能
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            if (message && currentRoom) {
+                socket.emit('chatMessage', { roomId: currentRoom, message });
+                input.value = '';
+            }
+        }
+
+        function addChatMessage(username, message) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'bg-gray-700 rounded p-2';
+            messageDiv.innerHTML = `<span class="font-bold">${username}:</span> ${message}`;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // 修改 roomList 事件處理
+        socket.on('roomList', (rooms) => {
+            const roomList = document.getElementById('roomList');
+            roomList.innerHTML = '';
+            
+            rooms.forEach(room => {
+                const roomDiv = document.createElement('div');
+                roomDiv.className = 'bg-gray-800 rounded-lg p-6';
+                const isRoomFull = room.players >= 2;
+                const isOwner = room.owner === document.querySelector('.player-name').textContent;
+                const joinButtonClass = isRoomFull ? 
+                    'bg-gray-600 cursor-not-allowed' : 
+                    'bg-blue-600 hover:bg-blue-700';
+
+                roomDiv.innerHTML = `
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold">${room.name}</h3>
+                        <span class="bg-green-600 px-3 py-1 rounded-full text-sm">
+                            ${room.players}/2 玩家
+                        </span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-user"></i>
+                            <span>房主：${room.owner}</span>
+                        </div>
+                        <button onclick="${!isRoomFull && !isOwner ? `joinRoom('${room.id}')` : ''}" 
+                            class="${joinButtonClass} px-4 py-2 rounded"
+                            ${isRoomFull || isOwner ? 'disabled' : ''}>
+                            ${isOwner ? '你的房間' : (isRoomFull ? '房間已滿' : '加入')}
+                        </button>
+                    </div>
+                `;
+                roomList.appendChild(roomDiv);
+            });
+        });
+
+        socket.on('gameUpdate', ({ board, currentPlayer, gameState }) => {
+            updateBoard(board);
+            currentPlayer = currentPlayer;
+            
+            const player1Info = document.getElementById('player1Info');
+            const player2Info = document.getElementById('player2Info');
+            
+            // 更新玩家信息
+            if (gameState.playerX) {
+                player1Info.querySelector('.font-bold').textContent = `${gameState.playerX} (X)`;
+            }
+            if (gameState.playerO) {
+                player2Info.querySelector('.font-bold').textContent = `${gameState.playerO} (O)`;
+            }
+
+            // 更新當前玩家狀態
+            const player1Status = player1Info.querySelector('div:nth-child(2)');
+            const player2Status = player2Info.querySelector('div:nth-child(2)');
+
+            // 根據遊戲狀態更新顯示
+            if (gameState.winner || gameState.isDraw) {
+                setTimeout(() => {
+                    const message = gameState.winner 
+                        ? `遊戲結束！${gameState.winner === document.querySelector('.player-name').textContent ? '你贏了！' : '你輸了！'}`
+                        : '遊戲結束！平局！';
+                        
+                    if (confirm(message + '\n是否要開始新的一局？')) {
+                        socket.emit('requestNewGame', { roomId: currentRoom });
+                    } else {
+                        // 如果玩家選擇不繼續，離開房間
+                        socket.emit('leaveRoom', { roomId: currentRoom });
+                        currentRoom = null;
+                        document.getElementById('game').style.display = 'none';
+                        document.getElementById('lobby').style.display = 'block';
+                        document.getElementById('chat-messages').innerHTML = '';
+                    }
+                }, 300);
+            } else {
+                document.getElementById('status').textContent = gameState.message;
+            }
+            
+            player1Info.classList.toggle('opacity-50', currentPlayer !== 'X');
+            player2Info.classList.toggle('opacity-50', currentPlayer !== 'O');
+        });
+
+        function updatePlayerStats() {
+            const player1Info = document.getElementById('player1Info');
+            const player2Info = document.getElementById('player2Info');
+            
+            player1Info.querySelector('.wins').textContent = playerStats.playerX.wins;
+            player1Info.querySelector('.losses').textContent = playerStats.playerX.losses;
+            player2Info.querySelector('.wins').textContent = playerStats.playerO.wins;
+            player2Info.querySelector('.losses').textContent = playerStats.playerO.losses;
+        }
+
+        // 重置統計數據
+        function resetPlayerStats() {
+            playerStats.playerX = { wins: 0, losses: 0 };
+            playerStats.playerO = { wins: 0, losses: 0 };
+            updatePlayerStats();
+        }
+
+        socket.on('chatMessage', ({ username, message }) => {
+            addChatMessage(username, message);
+        });
+
+        // 事件監聽器
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelector('#loginPage input[type="text"]').id = 'username';
+            document.querySelector('#loginPage input[type="password"]').id = 'password';
+            document.querySelector('#loginPage button').onclick = login;
+            
+            document.getElementById('password').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    login();
+                }
+            });
+
+            document.getElementById('chatInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+        });
+
+        // 登出功能
+        function logout() {
+            if (confirm('確定要登出嗎？')) {
+                // 如果在房間中，先離開房間
+                if (currentRoom) {
+                    socket.emit('leaveRoom', { roomId: currentRoom });
+                    currentRoom = null;
+                }
+                
+                // 清除遊戲狀態
+                gameBoard = Array(9).fill('');
+                currentPlayer = null;
+                
+                // 清除用戶界面
+                document.querySelectorAll('.player-name').forEach(el => {
+                    el.textContent = '玩家名稱';
+                });
+                
+                // 清除聊天記錄
+                document.getElementById('chatMessages').innerHTML = '';
+                
+                // 通知服務器用戶登出
+                socket.emit('logout');
+                
+                // 返回登入頁面
+                showPage('loginPage');
+                
+                // 清除登入表單
+                document.getElementById('username').value = '';
+                document.getElementById('password').value = '';
+            }
+        }
+
+        function leaveRoom() {
+            if (currentRoom) {
+                socket.emit('leaveRoom', { roomId: currentRoom });
+                currentRoom = null;
+                showPage('lobbyPage');
+                
+                // 清除遊戲狀態
+                gameBoard = Array(9).fill('');
+                currentPlayer = null;
+                
+                // 清除聊天記錄
+                document.getElementById('chatMessages').innerHTML = '';
+                
+                // 重置玩家信息和統計
+                resetPlayerStats();
+                document.getElementById('player1Info').querySelector('div:nth-child(2)').textContent = '等待加入...';
+                document.getElementById('player2Info').querySelector('div:nth-child(2)').textContent = '等待加入...';
+            }
+        }
+    </script>
+</body>
+</html> 

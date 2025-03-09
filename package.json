@@ -1,0 +1,26 @@
+{
+  "name": "tic-tac-toe-online",
+  "version": "1.0.0",
+  "description": "一個使用 Node.js 和 Socket.IO 開發的線上多人井字遊戲",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": [
+    "game",
+    "tic-tac-toe",
+    "multiplayer",
+    "socket.io",
+    "nodejs"
+  ],
+  "author": "[你的名字]",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.3"
+  }
+} 
