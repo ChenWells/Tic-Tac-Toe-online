@@ -7,6 +7,16 @@ graph TD
     B --> G[onClick: leaveRoom]
     B --> H[onClick: createRoom]
     B --> I[onClick: makeMove]
+    I --> makeMove[makeMove 處理玩家移動]
+    makeMove --> U["socket.emit('makeMove')"]
+    U --> V["socket.on('gameUpdate')"]
+    V --> W[updateBoard 更新遊戲板]
+    V --> X[更新玩家資訊]
+    V --> Y[處理遊戲結束]
+    Y --> Z[提示遊戲結果]
+    Y --> AA[請求新遊戲或離開房間]
+    AA --> AB["socket.emit('requestNewGame')"]
+    AA --> AC["socket.emit('leaveRoom')"]
     C --> J["socket.emit('login')"]
     D --> K[隱藏所有頁面]
     D --> L[顯示指定頁面]
@@ -20,25 +30,19 @@ graph TD
     R --> resetPlayerStats[resetPlayerStats 重置統計數據]
     G --> S[返回大廳頁面]
     H --> T["socket.emit('createRoom')"]
-    I --> U["socket.emit('makeMove')"]
-    J --> V["socket.on('roomList')"]
-    V --> Z[更新房間列表]
-    J --> W["socket.on('joinSuccess')"]
-    W --> AA[initializeGame 初始化遊戲]
-    AA --> AF[生成井字格]
-    AA --> AG[綁定點擊事件]
-    AG --> AH[onClick: makeMove]
-    J --> X["socket.on('gameUpdate')"]
-    X --> AB[updateBoard 更新遊戲板]
-    X --> AC[更新玩家資訊]
-    X --> AD[處理遊戲結束]
-    AD --> AI[提示遊戲結果]
-    AD --> AJ[請求新遊戲或離開房間]
-    AJ --> AK["socket.emit('requestNewGame')"]
-    AJ --> AL["socket.emit('leaveRoom')"]
-    J --> Y["socket.on('chatMessage')"]
-    Y --> AE[addChatMessage 添加聊天訊息]
-    AE --> AM[顯示聊天訊息]
+    J --> AD["socket.on('roomList')"]
+    AD --> AE[更新房間列表]
+    J --> AF["socket.on('joinSuccess')"]
+    AF --> AG[initializeGame 初始化遊戲]
+    AG --> AH[生成井字格]
+    AG --> AI[綁定點擊事件]
+    AI --> AJ[onClick: makeMove]
+    J --> AK["socket.on('chatMessage')"]
+    AK --> AL[addChatMessage 添加聊天訊息]
+    AL --> AM[顯示聊天訊息]
+    J --> AN["socket.on('playerStatsUpdate')"]
+    AN --> AO[updatePlayerStats 更新玩家統計數據]
+    AO --> AP[更新玩家勝負記錄]
 
     %% 樣式定義
     classDef default fill:#f9f9f9,stroke:#333,stroke-width:2px;
@@ -47,6 +51,6 @@ graph TD
     classDef function fill:#55efc4,stroke:#00b894,stroke-width:2px;
 
     %% 套用樣式
-    class A,B,C,D,E,F,G,H,I event;
-    class J,M,N,Q,T,U,V,W,X,Y,AK,AL socket;
-    class K,L,O,P,R,S,Z,AA,AB,AC,AD,AE,AF,AG,AH,AI,AJ,AM function; 
+    class A,B,C,D,E,F,G,H,I,AJ event;
+    class J,M,N,Q,T,U,V,AB,AC,AD,AF,AK,AN socket;
+    class K,L,O,P,R,S,W,X,Y,Z,AA,AE,AG,AH,AI,AL,AM,AO,AP,makeMove function; 
