@@ -1,0 +1,52 @@
+graph TD
+    A[DOMContentLoaded] --> B[綁定事件監聽器]
+    B --> C[onClick: login]
+    B --> D[onClick: showPage]
+    B --> E[onClick: sendMessage]
+    B --> F[onClick: logout]
+    B --> G[onClick: leaveRoom]
+    B --> H[onClick: createRoom]
+    B --> I[onClick: makeMove]
+    C --> J["socket.emit('login')"]
+    D --> K[隱藏所有頁面]
+    D --> L[顯示指定頁面]
+    E --> M["socket.emit('chatMessage')"]
+    F --> N["socket.emit('logout')"]
+    F --> O[清除遊戲狀態]
+    O --> resetPlayerStats[resetPlayerStats 重置統計數據]
+    F --> P[返回登入頁面]
+    G --> Q["socket.emit('leaveRoom')"]
+    G --> R[清除遊戲狀態]
+    R --> resetPlayerStats[resetPlayerStats 重置統計數據]
+    G --> S[返回大廳頁面]
+    H --> T["socket.emit('createRoom')"]
+    I --> U["socket.emit('makeMove')"]
+    J --> V["socket.on('roomList')"]
+    V --> Z[更新房間列表]
+    J --> W["socket.on('joinSuccess')"]
+    W --> AA[initializeGame 初始化遊戲]
+    AA --> AF[生成井字格]
+    AA --> AG[綁定點擊事件]
+    AG --> AH[onClick: makeMove]
+    J --> X["socket.on('gameUpdate')"]
+    X --> AB[updateBoard 更新遊戲板]
+    X --> AC[更新玩家資訊]
+    X --> AD[處理遊戲結束]
+    AD --> AI[提示遊戲結果]
+    AD --> AJ[請求新遊戲或離開房間]
+    AJ --> AK["socket.emit('requestNewGame')"]
+    AJ --> AL["socket.emit('leaveRoom')"]
+    J --> Y["socket.on('chatMessage')"]
+    Y --> AE[addChatMessage 添加聊天訊息]
+    AE --> AM[顯示聊天訊息]
+
+    %% 樣式定義
+    classDef default fill:#f9f9f9,stroke:#333,stroke-width:2px;
+    classDef event fill:#ff7675,stroke:#d63031,stroke-width:2px;
+    classDef socket fill:#74b9ff,stroke:#0984e3,stroke-width:2px;
+    classDef function fill:#55efc4,stroke:#00b894,stroke-width:2px;
+
+    %% 套用樣式
+    class A,B,C,D,E,F,G,H,I event;
+    class J,M,N,Q,T,U,V,W,X,Y,AK,AL socket;
+    class K,L,O,P,R,S,Z,AA,AB,AC,AD,AE,AF,AG,AH,AI,AJ,AM function; 
